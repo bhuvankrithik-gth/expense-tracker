@@ -72,4 +72,11 @@ class AuthServiceTest {
         assertThrows(BadRequestException.class, () -> authService.register(request));
         verify(userRepository, never()).create(any(User.class));
     }
+
+    @Test
+    void passwordEncoder_ShouldMatchHashedPassword() {
+        org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+        String hash = "$2a$10$E1sHE3vqU/KZFgw2qMLpp.lF3yfx3P1IJTApwCl4LgD0SfmQJIJLO";
+        assertTrue(encoder.matches("Ledger2026!", hash));
+    }
 }

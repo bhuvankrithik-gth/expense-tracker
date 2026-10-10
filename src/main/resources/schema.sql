@@ -57,17 +57,17 @@ CREATE TABLE IF NOT EXISTS budgets (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
-    month TINYINT NOT NULL,
-    year SMALLINT NOT NULL,
+    `month` TINYINT NOT NULL,
+    `year` SMALLINT NOT NULL,
     amount DECIMAL(12, 2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT chk_budget_month CHECK (month BETWEEN 1 AND 12),
-    CONSTRAINT chk_budget_year CHECK (year >= 2000),
+    CONSTRAINT chk_budget_month CHECK (`month` BETWEEN 1 AND 12),
+    CONSTRAINT chk_budget_year CHECK (`year` >= 2000),
     CONSTRAINT chk_budget_amount CHECK (amount > 0),
     CONSTRAINT fk_budgets_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_budgets_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
-    CONSTRAINT uq_user_budget_period UNIQUE (user_id, category_id, month, year)
+    CONSTRAINT uq_user_budget_period UNIQUE (user_id, category_id, `month`, `year`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. AUDIT LOGS TABLE
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_tx_user_date ON transactions(user_id, transaction_date DESC);
 CREATE INDEX IF NOT EXISTS idx_tx_user_category ON transactions(user_id, category_id);
 CREATE INDEX IF NOT EXISTS idx_tx_user_type_date ON transactions(user_id, type, transaction_date);
-CREATE INDEX IF NOT EXISTS idx_budgets_user_period ON budgets(user_id, year, month);
+CREATE INDEX IF NOT EXISTS idx_budgets_user_period ON budgets(user_id, `year`, `month`);
 CREATE INDEX IF NOT EXISTS idx_categories_user ON categories(user_id, type);
 
 -- 7. VIEW: v_monthly_summary

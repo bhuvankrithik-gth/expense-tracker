@@ -107,17 +107,17 @@ public class DatabaseConfig {
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
                 user_id BIGINT NOT NULL,
                 category_id BIGINT NOT NULL,
-                month TINYINT NOT NULL,
-                year SMALLINT NOT NULL,
+                `month` TINYINT NOT NULL,
+                `year` SMALLINT NOT NULL,
                 amount DECIMAL(12, 2) NOT NULL,
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                CONSTRAINT chk_budget_month CHECK (month BETWEEN 1 AND 12),
-                CONSTRAINT chk_budget_year CHECK (year >= 2000),
+                CONSTRAINT chk_budget_month CHECK (`month` BETWEEN 1 AND 12),
+                CONSTRAINT chk_budget_year CHECK (`year` >= 2000),
                 CONSTRAINT chk_budget_amount CHECK (amount > 0),
                 CONSTRAINT fk_budgets_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 CONSTRAINT fk_budgets_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
-                CONSTRAINT uq_user_budget_period UNIQUE (user_id, category_id, month, year)
+                CONSTRAINT uq_user_budget_period UNIQUE (user_id, category_id, `month`, `year`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """);
 
@@ -142,7 +142,7 @@ public class DatabaseConfig {
             jdbcTemplate.execute("CREATE INDEX idx_tx_user_category ON transactions(user_id, category_id);");
         } catch (Exception ignored) {}
         try {
-            jdbcTemplate.execute("CREATE INDEX idx_budgets_user_period ON budgets(user_id, year, month);");
+            jdbcTemplate.execute("CREATE INDEX idx_budgets_user_period ON budgets(user_id, `year`, `month`);");
         } catch (Exception ignored) {}
     }
 
@@ -283,7 +283,7 @@ public class DatabaseConfig {
             // Seed user Elena Vance
             jdbcTemplate.execute("""
                 INSERT INTO users (id, email, password_hash, auth_provider, google_sub, display_name, avatar_url, email_verified, created_at)
-                VALUES (1, 'elena.vance@ledgerly.internal', '$2a$10$3sWn3i77J7n9O/s7R8gMfuM3b1P.Q8D6z3fL0rUqE7hFzG6sC1sve', 'LOCAL', NULL, 'Elena Vance', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80', TRUE, '2026-05-01 09:00:00');
+                VALUES (1, 'elena.vance@ledgerly.internal', '$2a$10$E1sHE3vqU/KZFgw2qMLpp.lF3yfx3P1IJTApwCl4LgD0SfmQJIJLO', 'LOCAL', NULL, 'Elena Vance', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80', TRUE, '2026-05-01 09:00:00');
             """);
 
             // Seed categories
@@ -303,7 +303,7 @@ public class DatabaseConfig {
 
             // Seed budgets for current month
             jdbcTemplate.execute("""
-                INSERT INTO budgets (user_id, category_id, month, year, amount, created_at) VALUES
+                INSERT INTO budgets (user_id, category_id, `month`, `year`, amount, created_at) VALUES
                 (1, 1, 10, 2026, 1850.00, '2026-10-01 00:00:00'),
                 (1, 2, 10, 2026, 650.00, '2026-10-01 00:00:00'),
                 (1, 3, 10, 2026, 280.00, '2026-10-01 00:00:00'),

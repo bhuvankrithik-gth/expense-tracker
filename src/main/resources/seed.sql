@@ -3,10 +3,10 @@
 -- ============================================================================
 
 -- 1. SEED USERS
--- Password for Elena Vance: "Ledger2026!" (BCrypt hashed: $2a$10$vI8A7C6JzQ3vU9R4o8T1ZeNlP5sJ2kH3mF7wO9yL2bV4cX6dA8eSa)
+-- Password for Elena Vance: "Ledger2026!"
 INSERT INTO users (id, email, password_hash, auth_provider, google_sub, display_name, avatar_url, email_verified, created_at)
 VALUES 
-(1, 'elena.vance@ledgerly.internal', '$2a$10$3sWn3i77J7n9O/s7R8gMfuM3b1P.Q8D6z3fL0rUqE7hFzG6sC1sve', 'LOCAL', NULL, 'Elena Vance', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80', TRUE, '2026-05-01 09:00:00'),
+(1, 'elena.vance@ledgerly.internal', '$2a$10$E1sHE3vqU/KZFgw2qMLpp.lF3yfx3P1IJTApwCl4LgD0SfmQJIJLO', 'LOCAL', NULL, 'Elena Vance', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80', TRUE, '2026-05-01 09:00:00'),
 (2, 'marcus.reed@ledgerly.internal', NULL, 'GOOGLE', '109283746192837465920', 'Marcus Reed', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80', TRUE, '2026-06-15 14:30:00')
 ON DUPLICATE KEY UPDATE display_name = VALUES(display_name);
 
@@ -26,7 +26,7 @@ VALUES
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- 3. SEED BUDGETS FOR CURRENT PERIOD (October 2026)
-INSERT INTO budgets (user_id, category_id, month, year, amount, created_at)
+INSERT INTO budgets (user_id, category_id, `month`, `year`, amount, created_at)
 VALUES
 (1, 1, 10, 2026, 1850.00, '2026-10-01 00:00:00'),
 (1, 2, 10, 2026, 650.00, '2026-10-01 00:00:00'),
