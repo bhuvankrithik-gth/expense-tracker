@@ -1,0 +1,26 @@
+# Build and dependency directories
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Environment and sensitive credential files
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.properties
+
+# IDE and Editor files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS and system files
+.DS_Store
+Thumbs.db
+*.log
