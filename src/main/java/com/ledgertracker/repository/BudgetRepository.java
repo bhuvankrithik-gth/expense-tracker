@@ -96,8 +96,8 @@ public class BudgetRepository {
                 "  GROUP BY category_id " +
                 ") spent ON b.category_id = spent.category_id " +
                 "WHERE b.user_id = ? " +
-                "  AND b.year = ? " +
-                "  AND b.month = ? " +
+                "  AND b.`year` = ? " +
+                "  AND b.`month` = ? " +
                 "ORDER BY b.amount DESC";
 
         return jdbcTemplate.query(sql, progressRowMapper, userId, year, month, userId, year, month);
@@ -105,7 +105,7 @@ public class BudgetRepository {
 
     public Optional<Budget> findByIdAndUserId(Long id, Long userId) {
         String sql = "SELECT b.id, b.user_id, b.category_id, c.name AS category_name, " +
-                "c.color AS category_color, c.icon AS category_icon, b.month, b.year, b.amount, " +
+                "c.color AS category_color, c.icon AS category_icon, b.`month`, b.`year`, b.amount, " +
                 "b.created_at, b.updated_at " +
                 "FROM budgets b " +
                 "JOIN categories c ON b.category_id = c.id " +
@@ -120,11 +120,11 @@ public class BudgetRepository {
 
     public Optional<Budget> findByUserCategoryAndPeriod(Long userId, Long categoryId, int month, int year) {
         String sql = "SELECT b.id, b.user_id, b.category_id, c.name AS category_name, " +
-                "c.color AS category_color, c.icon AS category_icon, b.month, b.year, b.amount, " +
+                "c.color AS category_color, c.icon AS category_icon, b.`month`, b.`year`, b.amount, " +
                 "b.created_at, b.updated_at " +
                 "FROM budgets b " +
                 "JOIN categories c ON b.category_id = c.id " +
-                "WHERE b.user_id = ? AND b.category_id = ? AND b.month = ? AND b.year = ?";
+                "WHERE b.user_id = ? AND b.category_id = ? AND b.`month` = ? AND b.`year` = ?";
         try {
             Budget budget = jdbcTemplate.queryForObject(sql, budgetRowMapper, userId, categoryId, month, year);
             return Optional.ofNullable(budget);
@@ -134,7 +134,7 @@ public class BudgetRepository {
     }
 
     public Budget create(Budget budget) {
-        String sql = "INSERT INTO budgets (user_id, category_id, month, year, amount, created_at, updated_at) " +
+        String sql = "INSERT INTO budgets (user_id, category_id, `month`, `year`, amount, created_at, updated_at) " +
                 "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -149,11 +149,33 @@ public class BudgetRepository {
             return ps;
         }, keyHolder);
 
-        Number key = keyHolder.getKey();
-        if (key != null) {
-            budget.setId(key.longValue());
+        Long generatedId = extractId(keyHolder);
+        if (generatedId != null) {
+            budget.setId(generatedId);
         }
         return budget;
+    }
+
+    private Long extractId(KeyHolder keyHolder) {
+        if (keyHolder.getKeys() != null && !keyHolder.getKeys().isEmpty()) {
+            java.util.Map<String, Object> keys = keyHolder.getKeys();
+            for (String keyName : new String[]{"id", "ID", "id_"}) {
+                if (keys.containsKey(keyName) && keys.get(keyName) instanceof Number n) {
+                    return n.longValue();
+                }
+            }
+            for (Object val : keys.values()) {
+                if (val instanceof Number n) {
+                    return n.longValue();
+                }
+            }
+        }
+        try {
+            Number key = keyHolder.getKey();
+            return key != null ? key.longValue() : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void update(Budget budget) {

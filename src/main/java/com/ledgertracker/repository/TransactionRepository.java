@@ -65,11 +65,33 @@ public class TransactionRepository {
             return ps;
         }, keyHolder);
 
-        Number key = keyHolder.getKey();
-        if (key != null) {
-            tx.setId(key.longValue());
+        Long generatedId = extractId(keyHolder);
+        if (generatedId != null) {
+            tx.setId(generatedId);
         }
         return tx;
+    }
+
+    private Long extractId(KeyHolder keyHolder) {
+        if (keyHolder.getKeys() != null && !keyHolder.getKeys().isEmpty()) {
+            java.util.Map<String, Object> keys = keyHolder.getKeys();
+            for (String keyName : new String[]{"id", "ID", "id_"}) {
+                if (keys.containsKey(keyName) && keys.get(keyName) instanceof Number n) {
+                    return n.longValue();
+                }
+            }
+            for (Object val : keys.values()) {
+                if (val instanceof Number n) {
+                    return n.longValue();
+                }
+            }
+        }
+        try {
+            Number key = keyHolder.getKey();
+            return key != null ? key.longValue() : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void update(Transaction tx) {
