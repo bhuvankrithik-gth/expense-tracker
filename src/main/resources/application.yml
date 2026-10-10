@@ -1,0 +1,49 @@
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: false # Set to true automatically in production HTTPS via forward headers
+
+spring:
+  application:
+    name: ledgerly-expense-tracker
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:expense_tracker}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:root}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  sql:
+    init:
+      mode: ${SQL_INIT_MODE:never}
+      continue-on-error: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:not-set}
+            client-secret: ${GOOGLE_CLIENT_SECRET:not-set}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+logging:
+  level:
+    root: INFO
+    com.ledgertracker: DEBUG
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
