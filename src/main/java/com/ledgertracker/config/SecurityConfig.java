@@ -110,6 +110,12 @@ public class SecurityConfig {
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2FailureHandler)
             )
+            .sessionManagement(session -> session
+                // Disable session fixation migration for OAuth2: the session ID
+                // change on login was causing browsers to lose the session
+                // cookie during the Google redirect round-trip.
+                .sessionFixation().none()
+            )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler((request, response, authentication) -> {
