@@ -10,6 +10,7 @@ target/
 !.env.example
 application-local.yml
 application-local.properties
+SYSTEM_DOCUMENTATION.md
 
 # IDE and Editor files
 .idea/
