@@ -72,14 +72,14 @@ const App = {
     try {
       const res = await Api.get('/api/auth/status');
       if (!res.authenticated || !res.user) {
-        window.location.href = '/login.html';
+        window.location.href = '/';
         return false;
       }
       this.user = res.user;
       this.renderUserSnippet();
       return true;
     } catch (e) {
-      window.location.href = '/login.html';
+      window.location.href = '/';
       return false;
     }
   },
@@ -110,7 +110,7 @@ const App = {
         } catch (e) {
           // ignore
         }
-        window.location.href = '/login.html';
+        window.location.href = '/';
       });
     }
   },

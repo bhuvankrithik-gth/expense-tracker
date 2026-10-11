@@ -34,7 +34,7 @@ const Api = {
       // Handle 401 Unauthorized
       if (response.status === 401) {
         if (!endpoint.includes('/api/auth/status') && !endpoint.includes('/api/auth/login')) {
-          window.location.href = '/login.html';
+          window.location.href = '/';
         }
         const data = await response.json().catch(() => null);
         throw new Error(data?.message || 'Authentication session expired. Please sign in again.');

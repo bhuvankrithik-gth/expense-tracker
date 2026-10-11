@@ -78,7 +78,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Static resources & entry pages
                 .requestMatchers(
-                    "/", "/index.html", "/login.html", "/register.html",
+                    "/", "/index.html", "/home.html", "/login.html", "/register.html",
                     "/css/**", "/js/**", "/favicon.ico", "/error"
                 ).permitAll()
                 // Authentication and Health APIs
@@ -100,7 +100,7 @@ public class SecurityConfig {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("{\"success\":false,\"message\":\"Authentication required. Please sign in.\",\"data\":null,\"errors\":[\"Unauthorized session\"]}");
                     } else {
-                        response.sendRedirect("/login.html");
+                        response.sendRedirect("/");
                     }
                 })
             )
