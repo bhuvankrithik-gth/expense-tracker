@@ -23,9 +23,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final AuthService authService;
@@ -87,7 +92,13 @@ public class AuthController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuthStatus(@AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAuthStatus(@AuthenticationPrincipal UserPrincipal principal,
+                                                                          HttpServletRequest httpRequest) {
+        HttpSession sess = httpRequest.getSession(false);
+        logger.warn("AUTH-STATUS-CHECK sessionExists={} sessionId={} principalPresent={}",
+                sess != null,
+                sess != null ? sess.getId() : "null",
+                principal != null);
         Map<String, Object> status = new HashMap<>();
         if (principal != null) {
             status.put("authenticated", true);
