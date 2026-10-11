@@ -24,15 +24,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        // Explicitly persist the SecurityContext into the HttpSession, mirroring
-        // the working password-login flow in AuthController. Spring Security 6's
-        // requireExplicitSave mode relies on the repository save in
-        // AbstractAuthenticationProcessingFilter, which was not surviving the
-        // OAuth2 redirect round-trip in some browsers/proxies.
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context.getAuthentication() == null) {
-            context.setAuthentication(authentication);
-        }
+        // Persist the SecurityContext into the HttpSession using the EXACT pattern
+        // from the working password-login flow in AuthController.
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
         HttpSession session = request.getSession(true);
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
 
