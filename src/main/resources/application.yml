@@ -5,8 +5,8 @@ server:
     session:
       cookie:
         http-only: true
-        same-site: lax
-        secure: false # Set to true automatically in production HTTPS via forward headers
+        same-site: none
+        secure: true
 
 spring:
   application:
