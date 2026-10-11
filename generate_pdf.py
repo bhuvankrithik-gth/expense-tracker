@@ -1,0 +1,822 @@
+import os
+import subprocess
+
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ledgerly — Java Backend & DBMS Architecture Report</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 13mm 14mm 13mm;
+      @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 8pt;
+        color: #718096;
+      }
+    }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.42;
+      color: #1a202c;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3, h4 {
+      color: #1a365d;
+      font-weight: 700;
+      margin-top: 1.1em;
+      margin-bottom: 0.35em;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      font-size: 19pt;
+      border-bottom: 2.5px solid #2b6cb0;
+      padding-bottom: 5px;
+      margin-top: 0;
+      color: #0f2d59;
+    }
+
+    h2 {
+      font-size: 13pt;
+      border-bottom: 1.5px solid #cbd5e0;
+      padding-bottom: 4px;
+      margin-top: 1.3em;
+      color: #1a365d;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      color: #2b6cb0;
+      margin-top: 1em;
+      page-break-after: avoid;
+    }
+
+    h4 {
+      font-size: 9.5pt;
+      color: #2d3748;
+      margin-top: 0.8em;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin: 0.35em 0 0.55em 0;
+      text-align: justify;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .header-banner {
+      background: linear-gradient(135deg, #0f2d59 0%, #1a365d 60%, #2b6cb0 100%);
+      color: white;
+      padding: 15px 18px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+    }
+
+    .header-banner h1 {
+      color: #ffffff;
+      border-bottom: none;
+      margin: 0;
+      font-size: 18pt;
+      letter-spacing: -0.5px;
+    }
+
+    .header-banner .subtitle {
+      font-size: 10.5pt;
+      color: #bee3f8;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .header-banner .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.25);
+      font-size: 8.5pt;
+    }
+
+    .meta-item strong {
+      color: #e2e8f0;
+      display: block;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-item span {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 7px 0 12px 0;
+      font-size: 8.5pt;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e0;
+      padding: 5.5px 8.5px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #edf2f7;
+      color: #1a365d;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f7fafc;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 8.5pt;
+      background: #edf2f7;
+      color: #9b2c2c;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 9px 11px;
+      border-radius: 5px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 8pt;
+      line-height: 1.35;
+      overflow-x: auto;
+      margin: 5px 0 10px 0;
+      page-break-inside: avoid;
+      border-left: 4px solid #3182ce;
+    }
+
+    pre .kw { color: #f6ad55; font-weight: bold; }
+    pre .fn { color: #63b3ed; }
+    pre .str { color: #68d391; }
+    pre .cm { color: #a0aec0; font-style: italic; }
+    pre .typ { color: #faf089; }
+
+    .callout {
+      background: #ebf8ff;
+      border-left: 4px solid #3182ce;
+      padding: 9px 13px;
+      margin: 8px 0;
+      border-radius: 0 4px 4px 0;
+      page-break-inside: avoid;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #2b6cb0;
+      margin-bottom: 3px;
+      font-size: 9.5pt;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .viva-box {
+      background: #fffff0;
+      border-left: 4px solid #d69e2e;
+      border-right: 1px solid #ecc94b;
+      border-top: 1px solid #ecc94b;
+      border-bottom: 1px solid #ecc94b;
+      padding: 9px 11px;
+      margin: 8px 0;
+      border-radius: 4px;
+      page-break-inside: avoid;
+    }
+
+    .viva-title {
+      font-weight: 700;
+      color: #975a16;
+      font-size: 9.5pt;
+      margin-bottom: 3px;
+    }
+
+    .diagram-container {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px;
+      margin: 8px 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+
+    .flow-row {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+
+    .flow-node {
+      background: #ffffff;
+      border: 1.5px solid #2b6cb0;
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #1a365d;
+      flex: 1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .flow-node.db {
+      border-color: #2f855a;
+      color: #22543d;
+      background: #f0fff4;
+    }
+
+    .flow-node.sec {
+      border-color: #805ad5;
+      color: #44337a;
+      background: #faf5ff;
+    }
+
+    .flow-arrow {
+      font-weight: bold;
+      color: #4a5568;
+      font-size: 11pt;
+    }
+
+    ul, ol {
+      margin: 0.3em 0 0.5em 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== COVER / HEADER BANNER ==================== -->
+  <div class="header-banner">
+    <h1>Ledgerly — Comprehensive Engineering & DBMS Viva Report</h1>
+    <div class="subtitle">Complete Technical Guide: Java 17 Spring Boot Backend Architecture & MySQL 8 Relational Database System</div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Backend Architecture</strong>
+        <span>Spring Boot 3.3 & JdbcTemplate</span>
+      </div>
+      <div class="meta-item">
+        <strong>Database Engine</strong>
+        <span>MySQL 8.4 (InnoDB, Strict 3NF)</span>
+      </div>
+      <div class="meta-item">
+        <strong>Authentication</strong>
+        <span>BCrypt + Google OAuth 2.0 OIDC</span>
+      </div>
+      <div class="meta-item">
+        <strong>Live Production URL</strong>
+        <span>ledgerly-b9up.onrender.com</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EXECUTIVE SUMMARY ==================== -->
+  <h2>1. Executive Project Summary</h2>
+  <p>
+    <strong>Ledgerly</strong> is a full-stack, double-entry inspired financial ledger web application engineered to demonstrate production-grade system architecture across two core computing disciplines: <strong>Advanced Java Backend Engineering</strong> and <strong>Database Management Systems (DBMS)</strong>.
+  </p>
+  <p>
+    Unlike conventional applications that rely on high-level Object-Relational Mapping (ORM) frameworks like Hibernate/JPA, Ledgerly was deliberately designed using <strong>Spring JdbcTemplate with 100% hand-crafted, parameterized SQL</strong>. This architecture ensures complete transparency, deterministic control over query execution plans, and zero hidden ORM abstractions—allowing every database transaction, stored procedure, view, and trigger to be fully explained and defended during technical evaluation.
+  </p>
+
+  <div class="diagram-container">
+    <div style="font-size: 8.5pt; font-weight: 700; color: #4a5568; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">End-to-End System Request Flow</div>
+    <div class="flow-row">
+      <div class="flow-node">
+        <strong>Client Presentation</strong><br>
+        Vanilla HTML5 / CSS3 / ES6<br>
+        Chart.js 4.4 Canvas Engine
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node sec">
+        <strong>Spring Security Gateway</strong><br>
+        BCrypt / Google OAuth 2.0<br>
+        Session & CSRF Token Filter
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">
+        <strong>Spring MVC & Service</strong><br>
+        Controllers & Business Logic<br>
+        @Transactional Boundaries
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node db">
+        <strong>Pure JdbcTemplate</strong><br>
+        PreparedStatements only<br>
+        RowMapper Data Hydration
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node db">
+        <strong>MySQL 8.4 Database</strong><br>
+        3NF Normalized Schema<br>
+        Views, SP & Triggers
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PART I: JAVA BACKEND ==================== -->
+  <h2>2. Part I: Java Backend Architecture & Engineering</h2>
+
+  <h3>2.1 Framework & Core Technical Stack</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Technology Component</th>
+        <th style="width: 25%;">Version & Library</th>
+        <th style="width: 50%;">Architectural Responsibility</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Language Runtime</strong></td>
+        <td>Java 17 LTS / OpenJDK</td>
+        <td>Modern language features: strong typing, records, stream pipelines, and enhanced switch expressions.</td>
+      </tr>
+      <tr>
+        <td><strong>Core Framework</strong></td>
+        <td>Spring Boot 3.3.5</td>
+        <td>Inversion of Control (IoC), Dependency Injection (DI), embedded Tomcat container, and auto-configuration.</td>
+      </tr>
+      <tr>
+        <td><strong>Data Access Layer</strong></td>
+        <td>Spring JDBC (<code>JdbcTemplate</code>)</td>
+        <td>Low-level JDBC abstraction executing raw SQL via <code>PreparedStatement</code> without ORM overhead.</td>
+      </tr>
+      <tr>
+        <td><strong>Security Engine</strong></td>
+        <td>Spring Security 6.3</td>
+        <td>Authentication filter chains, authorization gates, BCrypt password hashing, and OAuth 2.0 OIDC login.</td>
+      </tr>
+      <tr>
+        <td><strong>Connection Pool</strong></td>
+        <td>HikariCP 5.1</td>
+        <td>High-performance, zero-overhead JDBC connection pooling configured for cloud database latency.</td>
+      </tr>
+      <tr>
+        <td><strong>Build & Packaging</strong></td>
+        <td>Apache Maven 3.9</td>
+        <td>Dependency lifecycle management and multi-stage containerized compilation.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 Layered Architectural Pattern (Separation of Concerns)</h3>
+  <p>
+    The application adheres strictly to the enterprise <strong>Three-Tier Layered Architecture</strong>, enforcing loose coupling and single responsibility across all packages:
+  </p>
+  <ul>
+    <li>
+      <strong>Controller Layer (<code>com.ledgertracker.controller</code>)</strong>: RESTful API entry points annotated with <code>@RestController</code>. Responsible for validating incoming HTTP request bodies (using <code>@Valid</code> and Jakarta Bean Validation), reading session authentication state via <code>@AuthenticationPrincipal</code>, and serializing DTO responses with appropriate HTTP status codes (<code>200 OK</code>, <code>201 Created</code>, <code>400 Bad Request</code>, <code>404 Not Found</code>).
+    </li>
+    <li>
+      <strong>Service Layer (<code>com.ledgertracker.service</code>)</strong>: Contains domain business logic. Manages declarative transaction boundaries via <code>@Transactional</code>, performs envelope budget calculations, handles RFC 4180 CSV generation, and orchestrates account linking rules.
+    </li>
+    <li>
+      <strong>Repository Layer (<code>com.ledgertracker.repository</code>)</strong>: Direct database access interface. Implements data retrieval and mutations using <code>JdbcTemplate.query()</code>, <code>queryForObject()</code>, and <code>update()</code> with custom functional <code>RowMapper&lt;T&gt;</code> lambdas to map SQL <code>ResultSet</code> rows into immutable Java domain models.
+    </li>
+    <li>
+      <strong>Model & DTO Layer (<code>com.ledgertracker.model</code> & <code>com.ledgertracker.dto</code>)</strong>: Cleanly isolates persistent database models (e.g., <code>User</code>, <code>Transaction</code>, <code>Budget</code>) from transfer objects (e.g., <code>LoginRequest</code>, <code>RegisterRequest</code>, <code>TransactionRequest</code>). Ensures sensitive data such as password hashes or internal IDs are never leaked to the client.
+    </li>
+    <li>
+      <strong>Exception Handling Layer (<code>com.ledgertracker.exception</code>)</strong>: A centralized <code>@RestControllerAdvice</code> class (<code>GlobalExceptionHandler</code>) intercepts all uncaught exceptions, translating validation failures (<code>MethodArgumentNotValidException</code>), business violations (<code>IllegalArgumentException</code>), and data conflicts into standardized JSON error objects:
+      <pre>{ <span class="str">"timestamp"</span>: <span class="str">"2026-10-11T..."</span>, <span class="str">"status"</span>: 400, <span class="str">"error"</span>: <span class="str">"Bad Request"</span>, <span class="str">"message"</span>: <span class="str">"Amount must be greater than zero"</span>, <span class="str">"path"</span>: <span class="str">"/api/transactions"</span> }</pre>
+    </li>
+  </ul>
+
+  <!-- ==================== SECURITY & AUTHENTICATION ==================== -->
+  <h3>2.3 Dual Authentication Architecture (Spring Security 6)</h3>
+  <p>
+    Ledgerly implements a session-based dual authentication scheme supporting both independent credential authentication and federated identity:
+  </p>
+
+  <div class="diagram-container">
+    <div style="font-size: 8.5pt; font-weight: 700; color: #4a5568; margin-bottom: 6px; text-transform: uppercase;">Dual Authentication Decision Logic</div>
+    <div class="flow-row">
+      <div class="flow-node">
+        <strong>Login Flow</strong><br>
+        User submits credentials or clicks Google
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node sec">
+        <strong>Authentication Check</strong><br>
+        Email/Password &rarr; BCrypt verify<br>
+        Google &rarr; OIDC Auth Code Flow
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node sec">
+        <strong>Account Linking Engine</strong><br>
+        Lookup <code>google_sub</code> &rarr; match?<br>
+        Lookup <code>email</code> (verified) &rarr; link!
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">
+        <strong>Security Context</strong><br>
+        Session Cookie <code>JSESSIONID</code><br>
+        CSRF Cookie <code>XSRF-TOKEN</code>
+      </div>
+    </div>
+  </div>
+
+  <h4>1. Local Email + Password Authentication</h4>
+  <ul>
+    <li><strong>Password Hashing</strong>: Passwords are salted and hashed using <code>BCryptPasswordEncoder</code> with a work factor of 10. Raw passwords are never logged, stored, or transmitted in responses.</li>
+    <li><strong>Authentication Flow</strong>: <code>AuthService.authenticate()</code> retrieves the user record by email, executes <code>passwordEncoder.matches(rawPassword, user.getPasswordHash())</code>, and stores a <code>UsernamePasswordAuthenticationToken</code> into Spring's <code>SecurityContextHolder</code>.</li>
+  </ul>
+
+  <h4>2. Federated Google OAuth 2.0 / OpenID Connect (OIDC) Flow</h4>
+  <ul>
+    <li><strong>Grant Type</strong>: Authorization Code Grant with PKCE handled natively by <code>spring-boot-starter-oauth2-client</code>.</li>
+    <li><strong>Redirect URI Handling</strong>: Configured for Cloudflare reverse proxy on Render via <code>server.forward-headers-strategy=framework</code>, guaranteeing that the generated redirect URI uses <code>https://</code> rather than internal container <code>http://</code>.</li>
+    <li>
+      <strong>Account Linking Algorithm (Zero Duplicate Accounts)</strong>:
+      <ol>
+        <li>Upon successful Google login, Spring Security provides the user's OIDC payload containing <code>sub</code> (Google's immutable unique ID), <code>email</code>, <code>email_verified</code>, and <code>name</code>.</li>
+        <li><strong>Step 1 (Fast Sub Lookup)</strong>: Query <code>users</code> by <code>google_sub</code>. If found, proceed to session issuance immediately.</li>
+        <li><strong>Step 2 (Verified Email Linking)</strong>: If not found, inspect <code>email_verified</code>. If <code>true</code>, query <code>users</code> by <code>email</code>. If an account already exists (created via email/password), the system updates the record:
+          <pre><span class="kw">UPDATE</span> users <span class="kw">SET</span> google_sub = ?, auth_provider = <span class="str">'BOTH'</span>, avatar_url = ? <span class="kw">WHERE</span> email = ?;</pre>
+          This seamlessly binds the Google identity to the existing account without losing historical ledger records.
+        </li>
+        <li><strong>Step 3 (New User Registration)</strong>: If no email matches, automatically insert a new user with <code>password_hash = NULL</code>, <code>auth_provider = 'GOOGLE'</code>, and seed 10 default starting categories within a single database transaction.</li>
+      </ol>
+    </li>
+  </ul>
+
+  <div class="viva-box">
+    <div class="viva-title">&#9733; Viva Defense Point: Why Pure JdbcTemplate instead of Hibernate/Spring Data JPA?</div>
+    <p style="margin: 0;">
+      <em>"Hibernate automates query creation, but often produces severe N+1 query execution problems, unwanted full-table joins, and unpredictable SQL that cannot be analyzed in a DBMS viva. With <code>JdbcTemplate</code>, every single SQL statement is written by hand, predictable, optimized with database indexes, and protected against SQL injection using parameterized <code>PreparedStatement</code>."</em>
+    </p>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== PART II: DBMS ARCHITECTURE ==================== -->
+  <h2>3. Part II: Database Management Systems (DBMS) & SQL Architecture</h2>
+
+  <h3>3.1 Relational Normalization Analysis (Proof of 3NF)</h3>
+  <p>
+    The database schema is formally normalized into <strong>Third Normal Form (3NF)</strong> to eliminate insertion, update, and deletion anomalies while ensuring minimal data redundancy:
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Normal Form</th>
+        <th style="width: 35%;">Theoretical Definition</th>
+        <th style="width: 45%;">Implementation in Ledgerly</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>First Normal Form (1NF)</strong></td>
+        <td>All attribute values must be atomic (indivisible). No repeating groups or composite columns.</td>
+        <td>
+          Monetary values are discrete <code>DECIMAL(12,2)</code>; dates are ISO <code>DATE</code>; user names and emails are separate columns; payment methods and types are atomic enumeration strings.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Second Normal Form (2NF)</strong></td>
+        <td>Table must be in 1NF and have <em>no partial functional dependencies</em> (every non-key attribute is fully dependent on the entire primary key).</td>
+        <td>
+          For composite candidate keys (e.g. in <code>budgets</code>, where candidate key is <code>(user_id, category_id, month, year)</code>), the budget <code>amount</code> depends on the <em>entire combination</em> of user, category, and period, not any partial subset.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Third Normal Form (3NF)</strong></td>
+        <td>Table must be in 2NF and have <em>no transitive functional dependencies</em> (non-key attributes depend only on the primary key: X &rarr; Y &rarr; Z is prohibited).</td>
+        <td>
+          Category visual attributes (name, color, icon) are decoupled into the <code>categories</code> table. In <code>transactions</code>, only foreign key <code>category_id</code> is stored. Renaming a category updates <strong>exactly 1 row</strong> in <code>categories</code>, eliminating millions of redundant row modifications across transactions.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== RELATIONAL SCHEMA & DDL ==================== -->
+  <h3>3.2 Complete Relational Schema & Integrity Constraints</h3>
+
+  <pre><span class="cm">-- 1. USERS TABLE: Supports dual authentication with mutually exclusive integrity</span>
+<span class="kw">CREATE TABLE</span> users (
+    id <span class="typ">BIGINT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+    email <span class="typ">VARCHAR(191)</span> <span class="kw">NOT NULL UNIQUE</span>,
+    password_hash <span class="typ">VARCHAR(255) NULL</span>,
+    auth_provider <span class="typ">VARCHAR(20)</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'LOCAL'</span>,
+    google_sub <span class="typ">VARCHAR(100) NULL UNIQUE</span>,
+    display_name <span class="typ">VARCHAR(100)</span> <span class="kw">NOT NULL</span>,
+    avatar_url <span class="typ">VARCHAR(500) NULL</span>,
+    email_verified <span class="typ">BOOLEAN</span> <span class="kw">NOT NULL DEFAULT FALSE</span>,
+    created_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+    updated_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</span>,
+    <span class="kw">CONSTRAINT</span> chk_user_auth_method <span class="kw">CHECK</span> (password_hash <span class="kw">IS NOT NULL OR</span> google_sub <span class="kw">IS NOT NULL</span>)
+) ENGINE=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4;
+
+<span class="cm">-- 2. CATEGORIES TABLE: User-defined & default financial taxonomy</span>
+<span class="kw">CREATE TABLE</span> categories (
+    id <span class="typ">BIGINT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+    user_id <span class="typ">BIGINT NULL</span>,
+    name <span class="typ">VARCHAR(50)</span> <span class="kw">NOT NULL</span>,
+    type <span class="typ">VARCHAR(10)</span> <span class="kw">NOT NULL</span>,
+    color <span class="typ">VARCHAR(10)</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'#1B4332'</span>,
+    icon <span class="typ">VARCHAR(50)</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'tag'</span>,
+    is_default <span class="typ">BOOLEAN</span> <span class="kw">NOT NULL DEFAULT FALSE</span>,
+    created_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+    <span class="kw">CONSTRAINT</span> chk_category_type <span class="kw">CHECK</span> (type <span class="kw">IN</span> (<span class="str">'EXPENSE'</span>, <span class="str">'INCOME'</span>)),
+    <span class="kw">CONSTRAINT</span> fk_categories_user <span class="kw">FOREIGN KEY</span> (user_id) <span class="kw">REFERENCES</span> users(id) <span class="kw">ON DELETE CASCADE</span>,
+    <span class="kw">CONSTRAINT</span> uq_user_category <span class="kw">UNIQUE</span> (user_id, name, type)
+) ENGINE=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4;
+
+<span class="cm">-- 3. TRANSACTIONS TABLE: Double-entry financial journal</span>
+<span class="kw">CREATE TABLE</span> transactions (
+    id <span class="typ">BIGINT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+    user_id <span class="typ">BIGINT</span> <span class="kw">NOT NULL</span>,
+    category_id <span class="typ">BIGINT</span> <span class="kw">NOT NULL</span>,
+    amount <span class="typ">DECIMAL(12, 2)</span> <span class="kw">NOT NULL</span>,
+    type <span class="typ">VARCHAR(10)</span> <span class="kw">NOT NULL</span>,
+    transaction_date <span class="typ">DATE</span> <span class="kw">NOT NULL</span>,
+    payment_method <span class="typ">VARCHAR(20)</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'DEBIT_CARD'</span>,
+    note <span class="typ">VARCHAR(255) NULL</span>,
+    created_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+    updated_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</span>,
+    <span class="kw">CONSTRAINT</span> chk_tx_amount <span class="kw">CHECK</span> (amount > 0),
+    <span class="kw">CONSTRAINT</span> chk_tx_type <span class="kw">CHECK</span> (type <span class="kw">IN</span> (<span class="str">'EXPENSE'</span>, <span class="str">'INCOME'</span>)),
+    <span class="kw">CONSTRAINT</span> chk_tx_payment_method <span class="kw">CHECK</span> (payment_method <span class="kw">IN</span> (<span class="str">'CASH'</span>, <span class="str">'DEBIT_CARD'</span>, <span class="str">'CREDIT_CARD'</span>, <span class="str">'BANK_TRANSFER'</span>, <span class="str">'UPI'</span>, <span class="str">'OTHER'</span>)),
+    <span class="kw">CONSTRAINT</span> fk_transactions_user <span class="kw">FOREIGN KEY</span> (user_id) <span class="kw">REFERENCES</span> users(id) <span class="kw">ON DELETE CASCADE</span>,
+    <span class="kw">CONSTRAINT</span> fk_transactions_category <span class="kw">FOREIGN KEY</span> (category_id) <span class="kw">REFERENCES</span> categories(id) <span class="kw">ON DELETE RESTRICT</span>
+) ENGINE=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4;
+
+<span class="cm">-- 4. BUDGETS TABLE: Monthly expenditure limits</span>
+<span class="kw">CREATE TABLE</span> budgets (
+    id <span class="typ">BIGINT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+    user_id <span class="typ">BIGINT</span> <span class="kw">NOT NULL</span>,
+    category_id <span class="typ">BIGINT</span> <span class="kw">NOT NULL</span>,
+    `month` <span class="typ">TINYINT</span> <span class="kw">NOT NULL</span>,
+    `year` <span class="typ">SMALLINT</span> <span class="kw">NOT NULL</span>,
+    amount <span class="typ">DECIMAL(12, 2)</span> <span class="kw">NOT NULL</span>,
+    created_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+    updated_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</span>,
+    <span class="kw">CONSTRAINT</span> chk_budget_month <span class="kw">CHECK</span> (`month` <span class="kw">BETWEEN</span> 1 <span class="kw">AND</span> 12),
+    <span class="kw">CONSTRAINT</span> chk_budget_year <span class="kw">CHECK</span> (`year` >= 2000),
+    <span class="kw">CONSTRAINT</span> chk_budget_amount <span class="kw">CHECK</span> (amount > 0),
+    <span class="kw">CONSTRAINT</span> fk_budgets_user <span class="kw">FOREIGN KEY</span> (user_id) <span class="kw">REFERENCES</span> users(id) <span class="kw">ON DELETE CASCADE</span>,
+    <span class="kw">CONSTRAINT</span> fk_budgets_category <span class="kw">FOREIGN KEY</span> (category_id) <span class="kw">REFERENCES</span> categories(id) <span class="kw">ON DELETE CASCADE</span>,
+    <span class="kw">CONSTRAINT</span> uq_user_budget_period <span class="kw">UNIQUE</span> (user_id, category_id, `month`, `year`)
+) ENGINE=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4;
+
+<span class="cm">-- 5. AUDIT LOGS TABLE: Immutable Change Data Capture (CDC)</span>
+<span class="kw">CREATE TABLE</span> audit_logs (
+    id <span class="typ">BIGINT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+    user_id <span class="typ">BIGINT</span> <span class="kw">NOT NULL</span>,
+    entity_type <span class="typ">VARCHAR(30)</span> <span class="kw">NOT NULL</span>,
+    entity_id <span class="typ">BIGINT</span> <span class="kw">NOT NULL</span>,
+    action <span class="typ">VARCHAR(10)</span> <span class="kw">NOT NULL</span>,
+    details <span class="typ">TEXT NULL</span>,
+    created_at <span class="typ">TIMESTAMP</span> <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
+) ENGINE=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4;</pre>
+
+  <div class="callout">
+    <div class="callout-title">&#128274; Critical Constraint Explanation: <code>ON DELETE RESTRICT</code> on Categories</div>
+    <p style="margin: 0;">
+      Notice that <code>fk_transactions_category</code> uses <strong><code>ON DELETE RESTRICT</code></strong> while <code>fk_transactions_user</code> uses <code>ON DELETE CASCADE</code>. If a user deletes an entire account, their transactions cascade. But if a user attempts to delete a single <em>category</em> that has historical transactions, MySQL strictly aborts the deletion. This prevents financial journal corruption and orphan transactions!
+    </p>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== VIEWS, PROCEDURES, TRIGGERS ==================== -->
+  <h3>3.3 Advanced Database Objects (Views, Stored Procedure, Triggers)</h3>
+
+  <h4>1. SQL View: <code>v_monthly_summary</code> (Powers Dashboard KPI Cards)</h4>
+  <p>
+    Computes total inflows, total outflows, net savings, and ledger count for every user by calendar month without client loops:
+  </p>
+  <pre><span class="kw">CREATE OR REPLACE VIEW</span> v_monthly_summary <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    t.user_id,
+    <span class="fn">YEAR</span>(t.transaction_date) <span class="kw">AS</span> summary_year,
+    <span class="fn">MONTH</span>(t.transaction_date) <span class="kw">AS</span> summary_month,
+    <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> t.type = <span class="str">'INCOME'</span> <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> 0 <span class="kw">END</span>), 0) <span class="kw">AS</span> total_income,
+    <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> t.type = <span class="str">'EXPENSE'</span> <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> 0 <span class="kw">END</span>), 0) <span class="kw">AS</span> total_expense,
+    (<span class="fn">COALESCE</span>(<span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> t.type = <span class="str">'INCOME'</span> <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> 0 <span class="kw">END</span>), 0) -
+     <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> t.type = <span class="str">'EXPENSE'</span> <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> 0 <span class="kw">END</span>), 0)) <span class="kw">AS</span> net_savings,
+    <span class="fn">COUNT</span>(t.id) <span class="kw">AS</span> transaction_count
+<span class="kw">FROM</span> transactions t
+<span class="kw">GROUP BY</span> t.user_id, <span class="fn">YEAR</span>(t.transaction_date), <span class="fn">MONTH</span>(t.transaction_date);</pre>
+
+  <h4>2. SQL View: <code>v_category_spending</code> (Powers Spending Doughnut Chart)</h4>
+  <p>
+    Rolls up expenses by taxonomy with average ticket sizes for Chart.js visualization:
+  </p>
+  <pre><span class="kw">CREATE OR REPLACE VIEW</span> v_category_spending <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    t.user_id, c.id <span class="kw">AS</span> category_id, c.name <span class="kw">AS</span> category_name, c.color <span class="kw">AS</span> category_color, c.icon <span class="kw">AS</span> category_icon,
+    <span class="fn">YEAR</span>(t.transaction_date) <span class="kw">AS</span> spending_year, <span class="fn">MONTH</span>(t.transaction_date) <span class="kw">AS</span> spending_month,
+    <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(t.amount), 0) <span class="kw">AS</span> total_spent, <span class="fn">COUNT</span>(t.id) <span class="kw">AS</span> transaction_count,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(t.amount), 2) <span class="kw">AS</span> average_amount
+<span class="kw">FROM</span> transactions t
+<span class="kw">JOIN</span> categories c <span class="kw">ON</span> t.category_id = c.id
+<span class="kw">WHERE</span> t.type = <span class="str">'EXPENSE'</span>
+<span class="kw">GROUP BY</span> t.user_id, c.id, c.name, c.color, c.icon, <span class="fn">YEAR</span>(t.transaction_date), <span class="fn">MONTH</span>(t.transaction_date);</pre>
+
+  <h4>3. Stored Procedure: <code>sp_calculate_budget_usage</code> (Envelopes & Risk Warnings)</h4>
+  <p>
+    Accepts <code>(p_user_id, p_year, p_month)</code>, aggregates expenditures against budget limits using an aggregated subquery join, and returns dynamic risk flags:
+  </p>
+  <pre><span class="kw">DROP PROCEDURE IF EXISTS</span> sp_calculate_budget_usage;
+<span class="kw">DELIMITER</span> //
+<span class="kw">CREATE PROCEDURE</span> sp_calculate_budget_usage(
+    <span class="kw">IN</span> p_user_id <span class="typ">BIGINT</span>,
+    <span class="kw">IN</span> p_year <span class="typ">INT</span>,
+    <span class="kw">IN</span> p_month <span class="typ">INT</span>
+)
+<span class="kw">BEGIN</span>
+    <span class="kw">SELECT</span>
+        b.id <span class="kw">AS</span> budget_id, b.category_id, c.name <span class="kw">AS</span> category_name, c.color <span class="kw">AS</span> category_color,
+        b.amount <span class="kw">AS</span> budget_amount,
+        <span class="fn">COALESCE</span>(spent.total_spent, 0) <span class="kw">AS</span> actual_spent,
+        (b.amount - <span class="fn">COALESCE</span>(spent.total_spent, 0)) <span class="kw">AS</span> remaining_amount,
+        <span class="fn">ROUND</span>((<span class="fn">COALESCE</span>(spent.total_spent, 0) / b.amount) * 100, 2) <span class="kw">AS</span> percentage_used,
+        <span class="kw">CASE</span>
+            <span class="kw">WHEN</span> <span class="fn">COALESCE</span>(spent.total_spent, 0) > b.amount <span class="kw">THEN</span> <span class="str">'EXCEEDED'</span>
+            <span class="kw">WHEN</span> <span class="fn">COALESCE</span>(spent.total_spent, 0) >= (b.amount * 0.85) <span class="kw">THEN</span> <span class="str">'WARNING'</span>
+            <span class="kw">ELSE</span> <span class="str">'SAFE'</span>
+        <span class="kw">END AS</span> budget_status
+    <span class="kw">FROM</span> budgets b
+    <span class="kw">JOIN</span> categories c <span class="kw">ON</span> b.category_id = c.id
+    <span class="kw">LEFT JOIN</span> (
+        <span class="kw">SELECT</span> category_id, <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total_spent
+        <span class="kw">FROM</span> transactions
+        <span class="kw">WHERE</span> user_id = p_user_id <span class="kw">AND</span> type = <span class="str">'EXPENSE'</span>
+          <span class="kw">AND</span> <span class="fn">YEAR</span>(transaction_date) = p_year <span class="kw">AND</span> <span class="fn">MONTH</span>(transaction_date) = p_month
+        <span class="kw">GROUP BY</span> category_id
+    ) spent <span class="kw">ON</span> b.category_id = spent.category_id
+    <span class="kw">WHERE</span> b.user_id = p_user_id <span class="kw">AND</span> b.year = p_year <span class="kw">AND</span> b.month = p_month
+    <span class="kw">ORDER BY</span> percentage_used <span class="kw">DESC</span>;
+<span class="kw">END</span> //
+<span class="kw">DELIMITER</span> ;</pre>
+
+  <h4>4. Storage-Engine Triggers (Immutable Audit Trail)</h4>
+  <pre><span class="cm">-- AFTER INSERT Trigger: Logs every new transaction to audit_logs</span>
+<span class="kw">CREATE TRIGGER</span> trg_after_transaction_insert_audit
+<span class="kw">AFTER INSERT ON</span> transactions <span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+    <span class="kw">INSERT INTO</span> audit_logs (user_id, entity_type, entity_id, action, details)
+    <span class="kw">VALUES</span> (NEW.user_id, <span class="str">'TRANSACTION'</span>, NEW.id, <span class="str">'INSERT'</span>, 
+            <span class="fn">CONCAT</span>(<span class="str">'Type: '</span>, NEW.type, <span class="str">', Amount: '</span>, NEW.amount, <span class="str">', Date: '</span>, NEW.transaction_date));
+<span class="kw">END</span>;
+
+<span class="cm">-- AFTER DELETE Trigger: Logs deleted transaction records</span>
+<span class="kw">CREATE TRIGGER</span> trg_after_transaction_delete_audit
+<span class="kw">AFTER DELETE ON</span> transactions <span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+    <span class="kw">INSERT INTO</span> audit_logs (user_id, entity_type, entity_id, action, details)
+    <span class="kw">VALUES</span> (OLD.user_id, <span class="str">'TRANSACTION'</span>, OLD.id, <span class="str">'DELETE'</span>, 
+            <span class="fn">CONCAT</span>(<span class="str">'Type: '</span>, OLD.type, <span class="str">', Amount: '</span>, OLD.amount, <span class="str">', Date: '</span>, OLD.transaction_date));
+<span class="kw">END</span>;</pre>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== PART III: VIVA DEFENSE GUIDE ==================== -->
+  <h2>4. Part III: Faculty Viva Defense Guide (Questions & Model Answers)</h2>
+
+  <div class="viva-box">
+    <div class="viva-title">Q1: How do you prevent SQL Injection if you are not using an ORM like Hibernate?</div>
+    <p>
+      <strong>Answer:</strong> <em>"We use Spring's <code>JdbcTemplate</code> strictly with parameterized <code>PreparedStatement</code> syntax. Every user input is passed as a separate parameter object into placeholder tokens (<code>?</code>). The database driver compiles the SQL query plan before binding the parameter values as literals. This makes it impossible for input strings to alter query grammar or execute malicious SQL commands."</em>
+    </p>
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-title">Q2: How is pagination implemented efficiently in your transactions search query?</div>
+    <p>
+      <strong>Answer:</strong> <em>"We implement pagination at the database engine level using <code>LIMIT ? OFFSET ?</code> combined with a composite B-Tree index on <code>(user_id, transaction_date DESC)</code>. Instead of pulling all records into Java memory and slicing the list (which would cause out-of-memory errors on large datasets), MySQL fetches only the requested page of 15 records directly from the leaf pages of the index."</em>
+    </p>
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-title">Q3: Why did you use DECIMAL(12,2) instead of FLOAT or DOUBLE for monetary amounts?</div>
+    <p>
+      <strong>Answer:</strong> <em>"Floating-point types (<code>FLOAT</code>, <code>DOUBLE</code>) use IEEE 754 binary approximations, leading to rounding inaccuracies (e.g. $0.1 + $0.2 \neq $0.3). In financial accounting and banking systems, monetary amounts must be exact. <code>DECIMAL(12,2)</code> is stored as an exact packed decimal representation with fixed precision and scale, guaranteeing zero rounding errors."</em>
+    </p>
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-title">Q4: Why use a Stored Procedure for budget calculations instead of computing it in Java?</div>
+    <p>
+      <strong>Answer:</strong> <em>"Using the stored procedure <code>sp_calculate_budget_usage</code> provides two major advantages: first, <strong>network minimization</strong>—instead of transferring thousands of raw transaction rows over the network to the Java application to calculate sums, the database server aggregates the data internally and returns only the final summary rows. Second, <strong>pre-compilation</strong>—the execution plan is stored and cached in the MySQL procedural dictionary."</em>
+    </p>
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-title">Q5: What is the purpose of database triggers in this architecture?</div>
+    <p>
+      <strong>Answer:</strong> <em>"The triggers <code>trg_after_transaction_insert_audit</code> and <code>trg_after_transaction_delete_audit</code> enforce <strong>storage-level Change Data Capture (CDC)</strong>. If an administrator, DBA, or migration script modifies the <code>transactions</code> table directly using a tool like MySQL Workbench or CLI (bypassing the Java web application), the trigger still fires automatically, guaranteeing an immutable audit log in <code>audit_logs</code>."</em>
+    </p>
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-title">Q6: How does your application link Google accounts with existing password accounts?</div>
+    <p>
+      <strong>Answer:</strong> <em>"When a user signs in with Google, our <code>AuthService</code> checks if Google reports <code>email_verified = true</code> to prevent identity spoofing. If verified, it checks if the email already exists in our <code>users</code> table. If found, instead of throwing an error or creating a duplicate user, it updates the record with Google's unique subject identifier (<code>google_sub</code>) and sets <code>auth_provider = 'BOTH'</code>. The user can subsequently sign in using either credential."</em>
+    </p>
+  </div>
+
+  <div class="viva-box">
+    <div class="viva-title">Q7: How is Cross-Site Request Forgery (CSRF) mitigated in your Single Page Application?</div>
+    <p>
+      <strong>Answer:</strong> <em>"We configured Spring Security's <code>CookieCsrfTokenRepository</code> with a custom <code>SpaCsrfTokenFilter</code>. The server generates a cryptographic CSRF token stored in a client-readable cookie named <code>XSRF-TOKEN</code>. Our vanilla JavaScript frontend automatically reads this cookie and includes it in the <code>X-XSRF-TOKEN</code> header on every state-mutating request (<code>POST</code>, <code>PUT</code>, <code>DELETE</code>), thwarting cross-origin attacks."</em>
+    </p>
+  </div>
+
+  <!-- ==================== PART IV: EVALUATION DETAILS ==================== -->
+  <h2>5. Part IV: Live Demonstration & Evaluation Reference</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 30%;">Item</th>
+        <th style="width: 70%;">Access / Configuration Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Live Web Application</strong></td>
+        <td><code>https://ledgerly-b9up.onrender.com</code> (Deployed on Render Docker)</td>
+      </tr>
+      <tr>
+        <td><strong>Database Host</strong></td>
+        <td><code>mysql-2d579d8f-bhuvankeerthan-3344.c.aivencloud.com:25448</code> (Aiven Cloud MySQL 8.4)</td>
+      </tr>
+      <tr>
+        <td><strong>Default Evaluator Login</strong></td>
+        <td><strong>Email:</strong> <code>elena.vance@ledgerly.internal</code> &nbsp;|&nbsp; <strong>Password:</strong> <code>Ledger2026!</code></td>
+      </tr>
+      <tr>
+        <td><strong>Google OAuth Sign-In</strong></td>
+        <td>One-click sign-in via <strong>"Continue with Google"</strong> button on login page</td>
+      </tr>
+      <tr>
+        <td><strong>GitHub Repository</strong></td>
+        <td><code>https://github.com/bhuvankrithik-gth/expense-tracker</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>
+"""
+
+html_path = os.path.abspath("ledgerly_viva_guide.html")
+pdf_path = os.path.abspath("Ledgerly_Java_Backend_and_DBMS_Viva_Guide.pdf")
+
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+chrome_exe = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+cmd = [
+    chrome_exe,
+    "--headless=new",
+    "--disable-gpu",
+    f"--print-to-pdf={pdf_path}",
+    "--no-pdf-header-footer",
+    html_path
+]
+
+res = subprocess.run(cmd, capture_output=True, text=True)
+if os.path.exists(pdf_path):
+    print(f"SUCCESS: PDF created at {pdf_path} (Size: {os.path.getsize(pdf_path):,} bytes)")
+    # Also update artifact copy
+    import shutil
+    artifact_dst = r"C:\Users\HP\.gemini\antigravity\brain\555db803-f76a-4e93-8fda-8be6f05c091e\Ledgerly_Java_Backend_and_DBMS_Viva_Guide.pdf"
+    shutil.copyfile(pdf_path, artifact_dst)
+    print("Updated artifact copy.")
