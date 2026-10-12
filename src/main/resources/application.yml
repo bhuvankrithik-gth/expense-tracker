@@ -38,7 +38,6 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:not-set}
             client-secret: ${GOOGLE_CLIENT_SECRET:not-set}
             scope:
-              - openid
               - profile
               - email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
