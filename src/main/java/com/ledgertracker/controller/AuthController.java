@@ -95,10 +95,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuthStatus(@AuthenticationPrincipal UserPrincipal principal,
                                                                           HttpServletRequest httpRequest) {
         HttpSession sess = httpRequest.getSession(false);
-        logger.warn("AUTH-STATUS-CHECK sessionExists={} sessionId={} principalPresent={}",
+        org.springframework.security.core.Authentication ctxAuth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        logger.warn("AUTH-STATUS-CHECK sessionExists={} sessionId={} principalPresent={} ctxAuthType={} ctxPrincipalType={}",
                 sess != null,
                 sess != null ? sess.getId() : "null",
-                principal != null);
+                principal != null,
+                ctxAuth != null ? ctxAuth.getClass().getSimpleName() : "null",
+                ctxAuth != null && ctxAuth.getPrincipal() != null ? ctxAuth.getPrincipal().getClass().getName() : "null");
         Map<String, Object> status = new HashMap<>();
         if (principal != null) {
             status.put("authenticated", true);

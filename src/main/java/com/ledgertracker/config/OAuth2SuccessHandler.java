@@ -27,12 +27,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         HttpSession sess = request.getSession(false);
-        logger.warn("OAUTH2-SUCCESS-HANDLER-CALLED auth={} sessionExists={} sessionId={}",
+        Object principal = authentication != null ? authentication.getPrincipal() : null;
+        logger.warn("OAUTH2-SUCCESS-HANDLER-CALLED auth={} principalType={} sessionExists={} sessionId={}",
                 authentication != null ? authentication.getClass().getSimpleName() : "null",
+                principal != null ? principal.getClass().getName() : "null",
                 sess != null,
                 sess != null ? sess.getId() : "null");
         logger.warn("OAUTH2-SUCCESS-HANDLER-CALLED holderAuth={}",
                 SecurityContextHolder.getContext().getAuthentication() != null ? "present" : "null");
+        // Explicitly persist like password login does
+        org.springframework.security.core.context.SecurityContext sc = SecurityContextHolder.createEmptyContext();
+        sc.setAuthentication(authentication);
+        SecurityContextHolder.setContext(sc);
+        HttpSession s2 = request.getSession(true);
+        s2.setAttribute(org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, sc);
+        logger.warn("OAUTH2-SUCCESS-HANDLER-CALLED manualSaveDone sessionId={}", s2.getId());
         clearAuthenticationAttributes(request);
         getRedirectStrategy().sendRedirect(request, response, "/index.html");
     }
